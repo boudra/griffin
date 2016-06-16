@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 
-#include "pool.h"
+#include "fosa_pool.h"
 
 fosa_mem_pool_t* fosa_pool_create(const size_t element_size, const size_t num_blocks) {
 

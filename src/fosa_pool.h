@@ -1,3 +1,6 @@
+#ifndef FOSA_POOL_H
+#define FOSA_POOL_H
+
 #include <stdint.h>
 
 struct fosa_mem_pool_s;
@@ -17,3 +20,5 @@ typedef struct fosa_mem_pool_s {
 fosa_mem_pool_t* fosa_pool_create(const size_t element_size, const size_t num_blocks);
 void* fosa_pool_alloc(fosa_mem_pool_t *p);
 void fosa_pool_free(void* ptr);
+
+#endif

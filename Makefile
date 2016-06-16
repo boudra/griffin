@@ -1,14 +1,15 @@
-C=clang
-C_FLAGS=-O0 -Wall -Wno-long-long -g -pedantic -std=c11
+all: build/Makefile
+	make -C build
 
-app: *.c *.h
-	$(C) *.c ${C_FLAGS} -o app
+build/Makefile:
+	mkdir -p build
+	cd build && cmake ..
 
-run: app
-	./app
-
-debug: app
-	gdb app
+test:
+	mkdir -p build
+	cd build && cmake .. -DENABLE_TESTS=1
+	make -C build
+	for test in build/tests/*; do ./$$test; done
 
 clean:
-	rm app
+	rm -rf build/*
