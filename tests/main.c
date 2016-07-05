@@ -1,16 +1,5 @@
 #include "fosa.h"
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <time.h>
-
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
 #include <assert.h>
 
 void homepage(fosa_conn_t* conn) {
