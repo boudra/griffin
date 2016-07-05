@@ -29,5 +29,18 @@ int main(int argc, char *argv[]) {
 
     assert(map.count == 1);
 
+    fosa_map_empty(&map);
+
+    assert(map.count == 0);
+    assert(map.size == 10);
+
+    fosa_map_put(&map, "b", "three");
+
+    fosa_map_destroy(&map);
+
+    assert(map.count == 0);
+    assert(map.size == 0);
+    assert(map.data == NULL);
+
     return 0;
 }

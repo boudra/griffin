@@ -68,4 +68,16 @@ void fosa_map_delete(fosa_map_t* map, const char* key) {
     }
 }
 
+void fosa_map_empty(fosa_map_t* map) {
+    map->count = 0;
+    memset(map->data, 0, sizeof(fosa_map_kv_t) * map->size);
+}
+
+void fosa_map_destroy(fosa_map_t* map) {
+    map->count = 0;
+    map->size = 0;
+    free(map->data);
+    map->data = NULL;
+}
+
 #endif /* end of include guard: FOSA_MAP_H */
