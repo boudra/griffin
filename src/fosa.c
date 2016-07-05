@@ -152,7 +152,7 @@ char* fosa_parse_header(char* buffer, fosa_map_t* headers) {
     return fosa_skip_until_next_line(++buffer);
 }
 
-void fosa_start_server(fosa_endpoint_t * endpoint) {
+void fosa_server_start(fosa_endpoint_t * endpoint) {
 
     int create_socket, new_socket;
     socklen_t addrlen;

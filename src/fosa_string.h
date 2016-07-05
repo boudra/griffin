@@ -72,7 +72,6 @@ static inline char* fosa_parse_header_head(char* buffer, char** method, char** p
     }
     buffer = fosa_skip_until_char(buffer, ' ');
     *path = fosa_strndup(*path, buffer - *path);
-    printf("PATH:%s\n", *path);
     *buffer = '\0';
     return fosa_skip_until_next_line(++buffer);
 }

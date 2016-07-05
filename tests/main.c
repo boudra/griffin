@@ -15,7 +15,6 @@ int main(int argc, char *argv[]) {
 
     fosa_conn_t conn = {
         .endpoint = &endpoint,
-        .res_headers = {{0}},
         .req_path = "/",
         .req_segments = { "" },
         .req_method = "get"

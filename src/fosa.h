@@ -183,6 +183,6 @@ void fosa_request_id(fosa_conn_t* conn);
 void fosa_put_content_length(fosa_conn_t* conn);
 void fosa_log_request(fosa_conn_t* conn);
 
-void fosa_start_server(fosa_endpoint_t * endpoint);
+void fosa_server_start(fosa_endpoint_t * endpoint);
 
 #endif
