@@ -51,26 +51,6 @@ static inline char* fosa_skip_until_eof(char *str) {
     return str;
 }
 
-static inline char* fosa_parse_header(char* buffer, char** key, char** value) {
-    char *ptr = NULL;
-    buffer = fosa_skip_whitespace(buffer);
-    *key = buffer;
-    buffer = fosa_skip_until_char(buffer, ':');
-    *buffer = '\0';
-    ptr = *key;
-    while(*ptr != '\0') {
-        if(*ptr >= 'A' && *ptr <= 'Z') {
-            *ptr = *ptr + 32;
-        }
-        ptr++;
-    }
-    buffer = fosa_skip_whitespace(++buffer);
-    *value = buffer;
-    buffer = fosa_skip_until_eof(buffer);
-    *buffer = '\0';
-    return fosa_skip_until_next_line(++buffer);
-}
-
 static inline char* fosa_parse_header_head(char* buffer, char** method, char** path, char **query_string) {
     char *ptr = NULL;
     buffer = fosa_skip_whitespace(buffer);

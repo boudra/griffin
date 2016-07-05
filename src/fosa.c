@@ -12,6 +12,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <assert.h>
+#include <arpa/inet.h>
 
 void fosa_match(fosa_endpoint_t* endpoint,
                 const char* method,
@@ -52,12 +53,7 @@ void fosa_put_body(fosa_conn_t* conn, const char* str) {
 }
 
 void fosa_put_header(fosa_conn_t* conn, const char* key, const char *value) {
-    const char** last = (const char**)conn->res_headers[0];
-    while(last[0] != NULL && last[1] != NULL) {
-        last += 2;
-    }
-    last[0] = fosa_strdup(key);
-    last[1] = fosa_strdup(value);
+    fosa_map_put(&conn->res_headers, key, fosa_strdup(value));
 }
 
 void fosa_put_header_i(fosa_conn_t* conn, const char* key, const uint32_t i) {
@@ -133,6 +129,29 @@ void fosa_request_id(fosa_conn_t* conn) {
 
 }
 
+char* fosa_parse_header(char* buffer, fosa_map_t* headers) {
+    char *ptr = NULL;
+    char *key = NULL;
+    char *value = NULL;
+    buffer = fosa_skip_whitespace(buffer);
+    key = buffer;
+    buffer = fosa_skip_until_char(buffer, ':');
+    *buffer = '\0';
+    ptr = key;
+    while(*ptr != '\0') {
+        if(*ptr >= 'A' && *ptr <= 'Z') {
+            *ptr = *ptr + 32;
+        }
+        ptr++;
+    }
+    buffer = fosa_skip_whitespace(++buffer);
+    value = buffer;
+    buffer = fosa_skip_until_eof(buffer);
+    *buffer = '\0';
+    fosa_map_put(headers, key, value);
+    return fosa_skip_until_next_line(++buffer);
+}
+
 void fosa_start_server(fosa_endpoint_t * endpoint) {
 
     int create_socket, new_socket;
@@ -146,8 +165,8 @@ void fosa_start_server(fosa_endpoint_t * endpoint) {
     struct sockaddr_in address;
 
     address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(8080);
+    address.sin_addr.s_addr = inet_addr(endpoint->hostname);
+    address.sin_port = htons(endpoint->port);
 
     int optval = 1;
     setsockopt(create_socket, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
@@ -181,11 +200,12 @@ void fosa_start_server(fosa_endpoint_t * endpoint) {
 
             fosa_conn_t conn = {
                 .endpoint = endpoint,
-                .res_headers = {{0}},
                 .res_status = 200,
                 .res_match = NULL,
                 .req_segments = {0}
             };
+
+            fosa_conn_init(&conn);
 
             recv_parse_buffer =
                 fosa_parse_header_head(
@@ -212,14 +232,10 @@ void fosa_start_server(fosa_endpoint_t * endpoint) {
                 recv_parse_buffer =
                     fosa_parse_header(
                         recv_parse_buffer,
-                        &conn.req_headers[header_num][0],
-                        &conn.req_headers[header_num][1]
+                        &conn.req_headers
                     );
                 ++header_num;
             }
-
-            conn.req_headers[header_num][0] = NULL;
-            conn.req_headers[header_num][1] = NULL;
 
             fosa_run(&conn);
 
@@ -243,13 +259,14 @@ void fosa_start_server(fosa_endpoint_t * endpoint) {
                 fosa_http_status_lines[status_line_offset]
             );
 
-            char** header = (char**)conn.res_headers[0];
-
-            while(header[0] != NULL && header[1] != NULL) {
-                send_buffer_ptr += sprintf(send_buffer_ptr, "%s: %s\r\n", header[0], header[1]);
-                free(header[0]);
-                free(header[1]);
-                header += 2;
+            for(size_t i = 0; i < conn.res_headers.size; ++i) {
+                fosa_map_kv_t* header = &conn.res_headers.data[i];
+                if(header->key != NULL) {
+                    send_buffer_ptr += sprintf(
+                            send_buffer_ptr, "%s: %s\r\n",
+                            header->key, (char*)header->value
+                    );
+                }
             }
 
             sprintf(send_buffer_ptr, "\r\n");

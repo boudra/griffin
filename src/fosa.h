@@ -3,6 +3,7 @@
 
 #include "fosa_string.h"
 #include "fosa_pool.h"
+#include "fosa_map.h"
 
 struct fosa_endpoint_t;
 
@@ -96,14 +97,20 @@ typedef struct fosa_conn_t {
     char* req_host;
     char* req_url;
     char* req_method;
-    char* req_headers[50][2];
 
-    const char* res_headers[50][2];
+    fosa_map_t req_headers;
+    fosa_map_t res_headers;
+
     short res_status;
     char* res_body;
     void (*res_match)(struct fosa_conn_t*);
 
 } fosa_conn_t;
+
+static inline void fosa_conn_init(fosa_conn_t* conn) {
+    fosa_map_init(&conn->req_headers, 10);
+    fosa_map_init(&conn->res_headers, 10);
+}
 
 typedef void (fosa_plug_t)(fosa_conn_t*);
 
@@ -131,6 +138,11 @@ typedef struct fosa_endpoint_t {
     fosa_plug_t* plugs[20];
     fosa_match_handler_t routes[20];
 } fosa_endpoint_t;
+
+static inline void fosa_endpoint_init(fosa_endpoint_t* endpoint) {
+    endpoint->port = 8080;
+    endpoint->hostname = "0.0.0.0";
+}
 
 typedef void (fosa_match_t)(fosa_conn_t*);
 
