@@ -11,5 +11,8 @@ test:
 	make -C build
 	for test in build/tests/*; do ./$$test; done
 
+dev: test
+	fswatch src/* tests/* | xargs -n1 make test
+
 clean:
 	rm -rf build/*

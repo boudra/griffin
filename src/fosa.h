@@ -10,6 +10,7 @@ typedef enum {
     GET,
     POST,
     PUT,
+    PATCH,
     DELETE,
     OPTIONS,
     HEAD
@@ -141,6 +142,12 @@ static inline fosa_method_t fosa_parse_method_str(const char *method) {
         m = POST;
     } else if(strcmp(method, "put") != 0) {
         m = PUT;
+    } else if(strcmp(method, "patch") != 0) {
+        m = PATCH;
+    } else if(strcmp(method, "head") != 0) {
+        m = HEAD;
+    } else if(strcmp(method, "options") != 0) {
+        m = OPTIONS;
     } else if(strcmp(method, "delete") != 0) {
         m = DELETE;
     }
@@ -163,5 +170,7 @@ void fosa_router(fosa_conn_t* conn);
 void fosa_request_id(fosa_conn_t* conn);
 void fosa_put_content_length(fosa_conn_t* conn);
 void fosa_log_request(fosa_conn_t* conn);
+
+void fosa_start_server(fosa_endpoint_t * endpoint);
 
 #endif
