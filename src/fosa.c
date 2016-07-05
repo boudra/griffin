@@ -180,7 +180,7 @@ void fosa_start_server(fosa_endpoint_t * endpoint) {
             recv(new_socket, recv_buffer, bufsize, 0);
 
             fosa_conn_t conn = {
-                .endpoint = &endpoint,
+                .endpoint = endpoint,
                 .res_headers = {{0}},
                 .res_status = 200,
                 .res_match = NULL,
