@@ -1,26 +1,26 @@
-#include "fosa.h"
+#include "griffin.h"
 
 #include <assert.h>
 
-void homepage(fosa_conn_t* conn) {
-    fosa_put_body(conn, "Hola mon!");
-    fosa_put_status(conn, 200);
+void homepage(gn_conn_t* conn) {
+    gn_put_body(conn, "Hola mon!");
+    gn_put_status(conn, 200);
 }
 
 int main(int argc, char *argv[]) {
 
-    fosa_endpoint_t endpoint = { .plugs = { &fosa_router } };
+    gn_endpoint_t endpoint = { .plugs = { &gn_router } };
 
-    fosa_match(&endpoint, "get", "/", homepage);
+    gn_match(&endpoint, "get", "/", homepage);
 
-    fosa_conn_t conn = {
+    gn_conn_t conn = {
         .endpoint = &endpoint,
         .req_path = "/",
         .req_segments = { "" },
         .req_method = "get"
     };
 
-    fosa_run(&conn);
+    gn_run(&conn);
 
     assert(strcmp(conn.res_body, "Hola mon!") == 0);
     assert(conn.res_status == 200);

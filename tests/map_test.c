@@ -1,4 +1,4 @@
-#include "fosa_map.h"
+#include "gn_map.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -7,36 +7,36 @@
 
 int main(int argc, char *argv[]) {
 
-    fosa_map_t map;
+    gn_map_t map;
 
-    fosa_map_init(&map, 10);
+    gn_map_init(&map, 10);
 
     assert(map.data != NULL);
     assert(map.size == 10);
     assert(map.count == 0);
 
-    fosa_map_put(&map, "a", "one");
-    assert(strcmp("one", fosa_map_get(&map, "a")) == 0);
+    gn_map_put(&map, "a", "one");
+    assert(strcmp("one", gn_map_get(&map, "a")) == 0);
 
-    fosa_map_put(&map, "a", "two");
-    assert(strcmp("two", fosa_map_get(&map, "a")) == 0);
+    gn_map_put(&map, "a", "two");
+    assert(strcmp("two", gn_map_get(&map, "a")) == 0);
 
-    fosa_map_put(&map, "b", "three");
+    gn_map_put(&map, "b", "three");
 
     assert(map.count == 2);
 
-    fosa_map_delete(&map, "b");
+    gn_map_delete(&map, "b");
 
     assert(map.count == 1);
 
-    fosa_map_empty(&map);
+    gn_map_empty(&map);
 
     assert(map.count == 0);
     assert(map.size == 10);
 
-    fosa_map_put(&map, "b", "three");
+    gn_map_put(&map, "b", "three");
 
-    fosa_map_destroy(&map);
+    gn_map_destroy(&map);
 
     assert(map.count == 0);
     assert(map.size == 0);

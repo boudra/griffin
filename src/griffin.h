@@ -1,11 +1,11 @@
-#ifndef FOSA_H
-#define FOSA_H
+#ifndef GN_H
+#define GN_H
 
-#include "fosa_string.h"
-#include "fosa_pool.h"
-#include "fosa_map.h"
+#include "gn_string.h"
+#include "gn_pool.h"
+#include "gn_map.h"
 
-struct fosa_endpoint_t;
+struct gn_endpoint_t;
 
 typedef enum {
     GET,
@@ -15,9 +15,9 @@ typedef enum {
     DELETE,
     OPTIONS,
     HEAD
-} fosa_method_t;
+} gn_method_t;
 
-static const char * fosa_http_status_lines[] = {
+static const char * gn_http_status_lines[] = {
 
     "200 OK",
     "201 Created",
@@ -27,8 +27,8 @@ static const char * fosa_http_status_lines[] = {
     NULL,  /* "205 Reset Content" */
     "206 Partial Content",
 
-#define FOSA_HTTP_STATUS_2XX_END 6
-#define FOSA_HTTP_STATUS_3XX_OFFSET 300 + FOSA_HTTP_STATUS_2XX_END + 1
+#define GN_HTTP_STATUS_2XX_END 6
+#define GN_HTTP_STATUS_3XX_OFFSET 300 + GN_HTTP_STATUS_2XX_END + 1
 
     "301 Moved Permanently",
     "302 Moved Temporarily",
@@ -38,8 +38,8 @@ static const char * fosa_http_status_lines[] = {
     NULL,  /* "306 unused" */
     "307 Temporary Redirect",
 
-#define FOSA_HTTP_STATUS_3XX_END FOSA_HTTP_STATUS_2XX_END + 7
-#define FOSA_HTTP_STATUS_4XX_OFFSET 400 + FOSA_HTTP_STATUS_3XX_END + 1
+#define GN_HTTP_STATUS_3XX_END GN_HTTP_STATUS_2XX_END + 7
+#define GN_HTTP_STATUS_4XX_OFFSET 400 + GN_HTTP_STATUS_3XX_END + 1
 
     "400 Bad Request",
     "401 Unauthorized",
@@ -65,8 +65,8 @@ static const char * fosa_http_status_lines[] = {
     "421 Misdirected Request",
     "422 Unprocessable Entity",
 
-#define FOSA_HTTP_STATUS_4XX_END FOSA_HTTP_STATUS_3XX_END + 22
-#define FOSA_HTTP_STATUS_5XX_OFFSET 500 + FOSA_HTTP_STATUS_4XX_END + 1
+#define GN_HTTP_STATUS_4XX_END GN_HTTP_STATUS_3XX_END + 22
+#define GN_HTTP_STATUS_5XX_OFFSET 500 + GN_HTTP_STATUS_4XX_END + 1
 
     /* NULL, */  /* "422 Unprocessable Entity" */
     /* NULL, */  /* "423 Locked" */
@@ -87,8 +87,8 @@ static const char * fosa_http_status_lines[] = {
 
 };
 
-typedef struct fosa_conn_t {
-    struct fosa_endpoint_t* endpoint;
+typedef struct gn_conn_t {
+    struct gn_endpoint_t* endpoint;
 
     char req_protocol[14];
     char* req_path;
@@ -98,23 +98,23 @@ typedef struct fosa_conn_t {
     char* req_url;
     char* req_method;
 
-    fosa_map_t req_headers;
-    fosa_map_t res_headers;
+    gn_map_t req_headers;
+    gn_map_t res_headers;
 
     short res_status;
     char* res_body;
-    void (*res_match)(struct fosa_conn_t*);
+    void (*res_match)(struct gn_conn_t*);
 
-} fosa_conn_t;
+} gn_conn_t;
 
-static inline void fosa_conn_init(fosa_conn_t* conn) {
-    fosa_map_init(&conn->req_headers, 10);
-    fosa_map_init(&conn->res_headers, 10);
+static inline void gn_conn_init(gn_conn_t* conn) {
+    gn_map_init(&conn->req_headers, 10);
+    gn_map_init(&conn->res_headers, 10);
 }
 
-typedef void (fosa_plug_t)(fosa_conn_t*);
+typedef void (gn_plug_t)(gn_conn_t*);
 
-static inline size_t fosa_hash(const char* str) {
+static inline size_t gn_hash(const char* str) {
     return strlen(str) + (int)str[0];
 }
 
@@ -122,32 +122,32 @@ typedef struct {
     short type;
     short flags;
     char* value;
-} fosa_segment_match_rule_t;
+} gn_segment_match_rule_t;
 
 typedef struct {
-    fosa_segment_match_rule_t segments[20];
+    gn_segment_match_rule_t segments[20];
     size_t num_segments;
     char* route;
-    void (*handler)(struct fosa_conn_t*);
-    fosa_method_t method;
-} fosa_match_handler_t;
+    void (*handler)(struct gn_conn_t*);
+    gn_method_t method;
+} gn_match_handler_t;
 
-typedef struct fosa_endpoint_t {
+typedef struct gn_endpoint_t {
     unsigned short port;
     char* hostname;
-    fosa_plug_t* plugs[20];
-    fosa_match_handler_t routes[20];
-} fosa_endpoint_t;
+    gn_plug_t* plugs[20];
+    gn_match_handler_t routes[20];
+} gn_endpoint_t;
 
-static inline void fosa_endpoint_init(fosa_endpoint_t* endpoint) {
+static inline void gn_endpoint_init(gn_endpoint_t* endpoint) {
     endpoint->port = 8080;
     endpoint->hostname = "0.0.0.0";
 }
 
-typedef void (fosa_match_t)(fosa_conn_t*);
+typedef void (gn_match_t)(gn_conn_t*);
 
-static inline fosa_method_t fosa_parse_method_str(const char *method) {
-    fosa_method_t m = GET;
+static inline gn_method_t gn_parse_method_str(const char *method) {
+    gn_method_t m = GET;
     if(strcmp(method, "get") != 0) {
         m = GET;
     } else if(strcmp(method, "post") != 0) {
@@ -166,23 +166,23 @@ static inline fosa_method_t fosa_parse_method_str(const char *method) {
     return m;
 }
 
-void fosa_run(fosa_conn_t* conn);
+void gn_run(gn_conn_t* conn);
 
-void fosa_put_status(fosa_conn_t* conn, short status);
-void fosa_put_header_i(fosa_conn_t* conn, const char* key, const uint32_t i);
-void fosa_put_header(fosa_conn_t* conn, const char* key, const char *value);
-void fosa_put_body(fosa_conn_t* conn, const char* str);
+void gn_put_status(gn_conn_t* conn, short status);
+void gn_put_header_i(gn_conn_t* conn, const char* key, const uint32_t i);
+void gn_put_header(gn_conn_t* conn, const char* key, const char *value);
+void gn_put_body(gn_conn_t* conn, const char* str);
 
-void fosa_match(fosa_endpoint_t* endpoint,
+void gn_match(gn_endpoint_t* endpoint,
                 const char* method,
                 char* path,
-                fosa_match_t* match);
+                gn_match_t* match);
 
-void fosa_router(fosa_conn_t* conn);
-void fosa_request_id(fosa_conn_t* conn);
-void fosa_put_content_length(fosa_conn_t* conn);
-void fosa_log_request(fosa_conn_t* conn);
+void gn_router(gn_conn_t* conn);
+void gn_request_id(gn_conn_t* conn);
+void gn_put_content_length(gn_conn_t* conn);
+void gn_log_request(gn_conn_t* conn);
 
-void fosa_server_start(fosa_endpoint_t * endpoint);
+void gn_server_start(gn_endpoint_t * endpoint);
 
 #endif

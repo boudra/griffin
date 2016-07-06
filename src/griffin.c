@@ -1,4 +1,4 @@
-#include "fosa.h"
+#include "griffin.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -14,32 +14,32 @@
 #include <assert.h>
 #include <arpa/inet.h>
 
-void fosa_match(fosa_endpoint_t* endpoint,
+void gn_match(gn_endpoint_t* endpoint,
                 const char* method,
                 char* path,
-                fosa_match_t* match) {
+                gn_match_t* match) {
 
-    fosa_match_handler_t* last = &endpoint->routes[0];
+    gn_match_handler_t* last = &endpoint->routes[0];
 
     while(last->handler != NULL) last++;
 
     last->handler = match;
-    last->route = fosa_strdup(path);
-    last->method = fosa_parse_method_str(method);
+    last->route = gn_strdup(path);
+    last->method = gn_parse_method_str(method);
 
     assert(path[0] == '/');
     size_t segment = 0;
 
     while(*path != '\0' && segment < 8) {
         path++;
-        char* end_segment = fosa_skip_until_char(path, '/');
+        char* end_segment = gn_skip_until_char(path, '/');
         if(*path == ':') {
             last->segments[segment].type = 1;
             path++;
         } else {
             last->segments[segment].type = 0;
         }
-        last->segments[segment].value = fosa_strndup(path, end_segment - path);
+        last->segments[segment].value = gn_strndup(path, end_segment - path);
         path = end_segment;
         ++segment;
     }
@@ -48,45 +48,45 @@ void fosa_match(fosa_endpoint_t* endpoint,
 
 }
 
-void fosa_put_body(fosa_conn_t* conn, const char* str) {
+void gn_put_body(gn_conn_t* conn, const char* str) {
     conn->res_body = (char*)str;
 }
 
-void fosa_put_header(fosa_conn_t* conn, const char* key, const char *value) {
-    fosa_map_put(&conn->res_headers, key, fosa_strdup(value));
+void gn_put_header(gn_conn_t* conn, const char* key, const char *value) {
+    gn_map_put(&conn->res_headers, key, gn_strdup(value));
 }
 
-void fosa_put_header_i(fosa_conn_t* conn, const char* key, const uint32_t i) {
+void gn_put_header_i(gn_conn_t* conn, const char* key, const uint32_t i) {
     char* len = malloc(16);
     sprintf(len, "%d", i);
-    fosa_put_header(conn, key, len);
+    gn_put_header(conn, key, len);
     free(len);
 }
 
-void fosa_run(fosa_conn_t* conn) {
+void gn_run(gn_conn_t* conn) {
     for(int i = 0; i < 20; i++) {
         if(conn->endpoint->plugs[i])
             conn->endpoint->plugs[i](conn);
     }
 }
 
-void fosa_put_status(fosa_conn_t* conn, short status) {
+void gn_put_status(gn_conn_t* conn, short status) {
     conn->res_status = status;
 }
 
-void fosa_log_request(fosa_conn_t* conn) {
+void gn_log_request(gn_conn_t* conn) {
     printf("%s %s -> %d\n", conn->req_method, conn->req_path, conn->res_status);
 }
 
-void fosa_router(fosa_conn_t* conn) {
-    fosa_match_handler_t *handler = &conn->endpoint->routes[0];
-    const fosa_method_t method = fosa_parse_method_str(conn->req_method);
+void gn_router(gn_conn_t* conn) {
+    gn_match_handler_t *handler = &conn->endpoint->routes[0];
+    const gn_method_t method = gn_parse_method_str(conn->req_method);
     while(conn->res_match == NULL && handler->handler != NULL) {
         if(handler->method != method) continue;
         size_t matches = 0;
         size_t i = 0;
         for(i = 0; i < handler->num_segments && conn->req_segments[i] != NULL; ++i) {
-            fosa_segment_match_rule_t *rule = &handler->segments[i];
+            gn_segment_match_rule_t *rule = &handler->segments[i];
             if(rule == NULL) break;
             else if(rule->type == 0 && strcmp(rule->value, conn->req_segments[i]) == 0) {
                 matches++;
@@ -102,16 +102,16 @@ void fosa_router(fosa_conn_t* conn) {
         handler++;
     }
     if(conn->res_match == NULL) {
-        fosa_put_status(conn, 404);
+        gn_put_status(conn, 404);
     }
 }
 
-void fosa_put_content_length(fosa_conn_t* conn) {
+void gn_put_content_length(gn_conn_t* conn) {
     const uint32_t content_length = conn->res_body ? strlen(conn->res_body) : 0;
-    fosa_put_header_i(conn, "Content-Length", content_length);
+    gn_put_header_i(conn, "Content-Length", content_length);
 }
 
-void fosa_request_id(fosa_conn_t* conn) {
+void gn_request_id(gn_conn_t* conn) {
     static uint32_t request_id = 0;
 
     time_t rawtime;
@@ -121,21 +121,21 @@ void fosa_request_id(fosa_conn_t* conn) {
     timeinfo = localtime(&rawtime);
     strftime(buffer, 80, "%a, %d %b %Y %H:%M:%S %Z", timeinfo);
 
-    fosa_put_header(conn, "Server", "Fosa 0.1");
-    fosa_put_header(conn, "Content-Type", "text/html; charset=UTF-8");
-    fosa_put_header(conn, "Cache-Control", "private, max-age=0, no-cache");
-    fosa_put_header(conn, "Date", buffer);
-    fosa_put_header_i(conn, "X-Request-Id", ++request_id);
+    gn_put_header(conn, "Server", "Gn 0.1");
+    gn_put_header(conn, "Content-Type", "text/html; charset=UTF-8");
+    gn_put_header(conn, "Cache-Control", "private, max-age=0, no-cache");
+    gn_put_header(conn, "Date", buffer);
+    gn_put_header_i(conn, "X-Request-Id", ++request_id);
 
 }
 
-char* fosa_parse_header(char* buffer, fosa_map_t* headers) {
+char* gn_parse_header(char* buffer, gn_map_t* headers) {
     char *ptr = NULL;
     char *key = NULL;
     char *value = NULL;
-    buffer = fosa_skip_whitespace(buffer);
+    buffer = gn_skip_whitespace(buffer);
     key = buffer;
-    buffer = fosa_skip_until_char(buffer, ':');
+    buffer = gn_skip_until_char(buffer, ':');
     *buffer = '\0';
     ptr = key;
     while(*ptr != '\0') {
@@ -144,15 +144,15 @@ char* fosa_parse_header(char* buffer, fosa_map_t* headers) {
         }
         ptr++;
     }
-    buffer = fosa_skip_whitespace(++buffer);
+    buffer = gn_skip_whitespace(++buffer);
     value = buffer;
-    buffer = fosa_skip_until_eof(buffer);
+    buffer = gn_skip_until_eof(buffer);
     *buffer = '\0';
-    fosa_map_put(headers, key, value);
-    return fosa_skip_until_next_line(++buffer);
+    gn_map_put(headers, key, value);
+    return gn_skip_until_next_line(++buffer);
 }
 
-void fosa_server_start(fosa_endpoint_t * endpoint) {
+void gn_server_start(gn_endpoint_t * endpoint) {
 
     int create_socket, new_socket;
     socklen_t addrlen;
@@ -198,17 +198,17 @@ void fosa_server_start(fosa_endpoint_t * endpoint) {
 
             recv(new_socket, recv_buffer, bufsize, 0);
 
-            fosa_conn_t conn = {
+            gn_conn_t conn = {
                 .endpoint = endpoint,
                 .res_status = 200,
                 .res_match = NULL,
                 .req_segments = {0}
             };
 
-            fosa_conn_init(&conn);
+            gn_conn_init(&conn);
 
             recv_parse_buffer =
-                fosa_parse_header_head(
+                gn_parse_header_head(
                     recv_parse_buffer,
                     &conn.req_method,
                     &conn.req_path,
@@ -222,45 +222,45 @@ void fosa_server_start(fosa_endpoint_t * endpoint) {
 
             while(*path != '\0') {
                 path++;
-                char* end_segment = fosa_skip_until_char(path, '/');
-                conn.req_segments[segment] = fosa_strndup(path, end_segment - path);
+                char* end_segment = gn_skip_until_char(path, '/');
+                conn.req_segments[segment] = gn_strndup(path, end_segment - path);
                 path = end_segment;
                 ++segment;
             }
 
-            while(recv_parse_buffer != fosa_skip_until_eof(recv_parse_buffer)) {
+            while(recv_parse_buffer != gn_skip_until_eof(recv_parse_buffer)) {
                 recv_parse_buffer =
-                    fosa_parse_header(
+                    gn_parse_header(
                         recv_parse_buffer,
                         &conn.req_headers
                     );
                 ++header_num;
             }
 
-            fosa_run(&conn);
+            gn_run(&conn);
 
             size_t status_line_offset = 0;
 
             if(conn.res_status >= 300) {
-                status_line_offset = conn.res_status - FOSA_HTTP_STATUS_3XX_OFFSET;
+                status_line_offset = conn.res_status - GN_HTTP_STATUS_3XX_OFFSET;
             }
 
             if(conn.res_status >= 400) {
-                status_line_offset = conn.res_status - FOSA_HTTP_STATUS_4XX_OFFSET;
+                status_line_offset = conn.res_status - GN_HTTP_STATUS_4XX_OFFSET;
             }
 
             if(conn.res_status >= 500) {
-                status_line_offset = conn.res_status - FOSA_HTTP_STATUS_5XX_OFFSET;
+                status_line_offset = conn.res_status - GN_HTTP_STATUS_5XX_OFFSET;
             }
 
             send_buffer_ptr += sprintf(
                 send_buffer_ptr,
                 "HTTP/1.1 %s\r\n",
-                fosa_http_status_lines[status_line_offset]
+                gn_http_status_lines[status_line_offset]
             );
 
             for(size_t i = 0; i < conn.res_headers.size; ++i) {
-                fosa_map_kv_t* header = &conn.res_headers.data[i];
+                gn_map_kv_t* header = &conn.res_headers.data[i];
                 if(header->key != NULL) {
                     send_buffer_ptr += sprintf(
                             send_buffer_ptr, "%s: %s\r\n",
