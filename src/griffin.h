@@ -204,6 +204,4 @@ void gn_request_id(gn_conn_t* conn);
 void gn_put_content_length(gn_conn_t* conn);
 void gn_log_request(gn_conn_t* conn);
 
-void gn_server_start(gn_endpoint_t * endpoint);
-
 #endif

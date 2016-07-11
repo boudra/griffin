@@ -104,7 +104,6 @@ static inline const uint8_t gn_parse_hex_byte(const char in) {
     return c;
 }
 
-
 static inline const size_t gn_url_decode(const char* in, char *out) {
     const char *start = out;
     for(; *in; ++in) {
@@ -165,31 +164,6 @@ static inline char* gn_skip_until_eof(char *str) {
     while(*str != '\n' && *str != '\0') str++;
     if(*(str - 1) == '\r') str--;
     return str;
-}
-
-static inline char* gn_parse_header_head(char* buffer, char** method, char** path, char **query_string) {
-    char *ptr = NULL;
-    buffer = gn_skip_whitespace(buffer);
-    *method = buffer;
-    buffer = gn_skip_until_char(buffer, ' ');
-    *buffer = '\0';
-    ptr = *method;
-    while(*ptr != '\0') {
-        *ptr = *ptr + 32;
-        ptr++;
-    }
-    buffer = gn_skip_whitespace(++buffer);
-    *path = buffer;
-    buffer = gn_skip_until_chars(buffer, "? ");
-    if(*buffer == '?') {
-        *query_string = buffer + 1;
-        *buffer = '\0';
-        buffer++;
-    }
-    buffer = gn_skip_until_char(buffer, ' ');
-    *path = gn_strndup(*path, buffer - *path);
-    *buffer = '\0';
-    return gn_skip_until_next_line(++buffer);
 }
 
 static inline const size_t gn_str_split(const char *in, char delimiter, char **out) {
