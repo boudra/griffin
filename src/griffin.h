@@ -107,6 +107,19 @@ typedef struct gn_conn_t {
 
 } gn_conn_t;
 
+static inline void gn_put_req_path(gn_conn_t* conn, const char *path) {
+    assert(path[0] == '/');
+    gn_str_split(path + 1, '/', conn->req_segments);
+    conn->req_path = gn_strdup(path);
+}
+
+static inline gn_conn_t gn_conn_create(struct gn_endpoint_t *endpoint,
+        const char *method, const char *path, gn_map_t *params) {
+    gn_conn_t conn = { .endpoint = endpoint, .req_method = gn_strdup(method) };
+    gn_put_req_path(&conn, path);
+    return conn;
+}
+
 static inline void gn_conn_init(gn_conn_t* conn) {
     gn_map_init(&conn->req_headers, 10);
     gn_map_init(&conn->res_headers, 10);

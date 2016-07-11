@@ -30,8 +30,8 @@ void gn_match(gn_endpoint_t* endpoint,
     assert(path[0] == '/');
     size_t segment = 0;
 
+    path++;
     while(*path != '\0' && segment < 8) {
-        path++;
         char* end_segment = gn_skip_until_char(path, '/');
         if(*path == ':') {
             last->segments[segment].type = 1;
@@ -85,7 +85,9 @@ void gn_router(gn_conn_t* conn) {
         if(handler->method != method) continue;
         size_t matches = 0;
         size_t i = 0;
-        for(i = 0; i < handler->num_segments && conn->req_segments[i] != NULL; ++i) {
+        for(i = 0; conn->req_segments[i] != NULL; ++i);
+        size_t req_segments_len = i;
+        for(i = 0; i < handler->num_segments && i < req_segments_len; ++i) {
             gn_segment_match_rule_t *rule = &handler->segments[i];
             if(rule == NULL) break;
             else if(rule->type == 0 && strcmp(rule->value, conn->req_segments[i]) == 0) {
@@ -94,7 +96,8 @@ void gn_router(gn_conn_t* conn) {
                 matches++;
             }
         }
-        if(matches > 0 && matches == handler->num_segments) {
+        if((matches > 0 && matches == handler->num_segments) ||
+           (req_segments_len + handler->num_segments) == 0) {
             handler->handler(conn);
             conn->res_match = handler->handler;
             break;
@@ -183,65 +186,54 @@ void gn_server_start(gn_endpoint_t * endpoint) {
             exit(1);
         }
 
-        if ((new_socket = accept(create_socket, (struct sockaddr *) &address, &addrlen)) < 0) {
-            printf("accept error\n");
-            exit(1);
-        }
-
-        {
-            char recv_buffer[1024] = {0};
-            char *recv_parse_buffer = &recv_buffer[0];
-            char send_buffer[1024] = {0};
-            char *send_buffer_ptr = &send_buffer[0];
-
-            int header_num = 0;
-
-            recv(new_socket, recv_buffer, bufsize, 0);
-
-            gn_conn_t conn = {
-                .endpoint = endpoint,
-                .res_status = 200,
-                .res_match = NULL,
-                .req_segments = {0}
-            };
-
-            gn_conn_init(&conn);
-
-            recv_parse_buffer =
-                gn_parse_header_head(
-                    recv_parse_buffer,
-                    &conn.req_method,
-                    &conn.req_path,
-                    &conn.req_query_string
-                );
-
-            size_t segment = 0;
-            char *path = conn.req_path;
-
-            assert(path[0] == '/');
-
-            while(*path != '\0') {
-                path++;
-                char* end_segment = gn_skip_until_char(path, '/');
-                conn.req_segments[segment] = gn_strndup(path, end_segment - path);
-                path = end_segment;
-                ++segment;
+            if ((new_socket = accept(create_socket, (struct sockaddr *) &address, &addrlen)) < 0) {
+                printf("accept error\n");
+                exit(1);
             }
 
-            while(recv_parse_buffer != gn_skip_until_eof(recv_parse_buffer)) {
+            {
+                char recv_buffer[1024] = {0};
+                char *recv_parse_buffer = &recv_buffer[0];
+                char send_buffer[1024] = {0};
+                char *send_buffer_ptr = &send_buffer[0];
+
+                int header_num = 0;
+
+                recv(new_socket, recv_buffer, bufsize, 0);
+
+                gn_conn_t conn = {
+                    .endpoint = endpoint,
+                    .res_status = 200,
+                    .res_match = NULL,
+                    .req_segments = {0}
+                };
+
+                gn_conn_init(&conn);
+
                 recv_parse_buffer =
-                    gn_parse_header(
+                    gn_parse_header_head(
                         recv_parse_buffer,
-                        &conn.req_headers
+                        &conn.req_method,
+                        &conn.req_path,
+                        &conn.req_query_string
                     );
-                ++header_num;
-            }
 
-            gn_run(&conn);
+                gn_put_req_path(&conn, conn.req_path);
 
-            size_t status_line_offset = 0;
+                while(recv_parse_buffer != gn_skip_until_eof(recv_parse_buffer)) {
+                    recv_parse_buffer =
+                        gn_parse_header(
+                            recv_parse_buffer,
+                            &conn.req_headers
+                        );
+                    ++header_num;
+                }
 
-            if(conn.res_status >= 300) {
+                gn_run(&conn);
+
+                size_t status_line_offset = 0;
+
+                if(conn.res_status >= 300) {
                 status_line_offset = conn.res_status - GN_HTTP_STATUS_3XX_OFFSET;
             }
 
@@ -273,7 +265,6 @@ void gn_server_start(gn_endpoint_t * endpoint) {
             write(new_socket, send_buffer, strlen(send_buffer));
 
             if(conn.res_body) {
-                printf("%s\n", conn.res_body);
                 write(new_socket, conn.res_body, strlen(conn.res_body));
             }
 

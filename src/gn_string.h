@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <wctype.h>
+#include <assert.h>
 
 #define is_utf8(c) (((c) > 0x7f))
 
@@ -103,6 +104,7 @@ static inline const uint8_t gn_parse_hex_byte(const char in) {
     return c;
 }
 
+
 static inline const size_t gn_url_decode(const char* in, char *out) {
     const char *start = out;
     for(; *in; ++in) {
@@ -190,4 +192,17 @@ static inline char* gn_parse_header_head(char* buffer, char** method, char** pat
     return gn_skip_until_next_line(++buffer);
 }
 
+static inline const size_t gn_str_split(const char *in, char delimiter, char **out) {
+    size_t i = 0;
+    while(*(in)) {
+        char* end_part = gn_skip_until_char((char*)in, delimiter);
+        out[i] = gn_strndup(in, (end_part - in) + 1);
+        out[i][(end_part-in)] = '\0';
+        in = end_part;
+        ++i;
+    }
+    return i;
+}
+
 #endif
+
