@@ -101,9 +101,13 @@ typedef struct gn_conn_t {
     gn_map_t req_headers;
     gn_map_t res_headers;
 
+    gn_map_t req_params;
+    gn_map_t req_body_params;
+    gn_map_t req_query_params;
+
     short res_status;
     char* res_body;
-    void (*res_match)(struct gn_conn_t*);
+    void (*res_match)(struct gn_conn_t*, gn_map_t*);
 
 } gn_conn_t;
 
@@ -113,16 +117,20 @@ static inline void gn_put_req_path(gn_conn_t* conn, const char *path) {
     conn->req_path = gn_strdup(path);
 }
 
-static inline gn_conn_t gn_conn_create(struct gn_endpoint_t *endpoint,
-        const char *method, const char *path, gn_map_t *params) {
-    gn_conn_t conn = { .endpoint = endpoint, .req_method = gn_strdup(method) };
-    gn_put_req_path(&conn, path);
-    return conn;
-}
-
 static inline void gn_conn_init(gn_conn_t* conn) {
     gn_map_init(&conn->req_headers, 10);
     gn_map_init(&conn->res_headers, 10);
+    gn_map_init(&conn->req_params, 20);
+    gn_map_init(&conn->req_body_params, 10);
+    gn_map_init(&conn->req_query_params, 10);
+}
+
+static inline gn_conn_t gn_conn_create(struct gn_endpoint_t *endpoint,
+        const char *method, const char *path, gn_map_t *params) {
+    gn_conn_t conn = { .endpoint = endpoint, .req_method = gn_strdup(method) };
+    gn_conn_init(&conn);
+    gn_put_req_path(&conn, path);
+    return conn;
 }
 
 typedef void (gn_plug_t)(gn_conn_t*);
@@ -130,6 +138,8 @@ typedef void (gn_plug_t)(gn_conn_t*);
 static inline size_t gn_hash(const char* str) {
     return strlen(str) + (int)str[0];
 }
+
+typedef void (gn_match_t)(gn_conn_t*, gn_map_t*);
 
 typedef struct {
     short type;
@@ -141,7 +151,7 @@ typedef struct {
     gn_segment_match_rule_t segments[20];
     size_t num_segments;
     char* route;
-    void (*handler)(struct gn_conn_t*);
+    gn_match_t* handler;
     gn_method_t method;
 } gn_match_handler_t;
 
@@ -156,8 +166,6 @@ static inline void gn_endpoint_init(gn_endpoint_t* endpoint) {
     endpoint->port = 8080;
     endpoint->hostname = "0.0.0.0";
 }
-
-typedef void (gn_match_t)(gn_conn_t*);
 
 static inline gn_method_t gn_parse_method_str(const char *method) {
     gn_method_t m = GET;

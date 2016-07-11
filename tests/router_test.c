@@ -2,12 +2,12 @@
 
 #include <assert.h>
 
-void root(gn_conn_t* conn) {
+void root(gn_conn_t* conn, gn_map_t* params) {
     gn_put_body(conn, "Hola mon!");
     gn_put_status(conn, 200);
 }
 
-void root2(gn_conn_t* conn) {
+void root2(gn_conn_t* conn, gn_map_t* params) {
     gn_put_body(conn, "Hello world!");
     gn_put_status(conn, 200);
 }

@@ -98,7 +98,7 @@ void gn_router(gn_conn_t* conn) {
         }
         if((matches > 0 && matches == handler->num_segments) ||
            (req_segments_len + handler->num_segments) == 0) {
-            handler->handler(conn);
+            handler->handler(conn, &conn->req_params);
             conn->res_match = handler->handler;
             break;
         }
