@@ -1,4 +1,5 @@
 #include "gn_map.h"
+#include "gn_pool.h"
 
 #include <assert.h>
 #include <stdio.h>
