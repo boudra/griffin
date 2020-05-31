@@ -9,21 +9,20 @@
 #include <assert.h>
 #include <arpa/inet.h>
 
-void gn_server_start(gn_endpoint_t * endpoint) {
-
+void gn_start_server(gn_endpoint_t * endpoint, const char* bind_address, unsigned short port) {
     int create_socket, new_socket;
     socklen_t addrlen;
     const int bufsize = 1024;
 
     if ((create_socket = socket(AF_INET, SOCK_STREAM, 0)) > 0){
-        printf("The socket was created\n");
+        /* printf("The socket was created\n"); */
     }
 
     struct sockaddr_in address;
 
     address.sin_family = AF_INET;
-    address.sin_addr.s_addr = inet_addr(endpoint->hostname);
-    address.sin_port = htons(endpoint->port);
+    address.sin_addr.s_addr = inet_addr(bind_address);
+    address.sin_port = htons(port);
 
     int optval = 1;
 
@@ -34,7 +33,7 @@ void gn_server_start(gn_endpoint_t * endpoint) {
     setsockopt(create_socket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
 
     if (bind(create_socket, (struct sockaddr *) &address, sizeof(address)) == 0) {
-        printf("bind ok\n");
+        /* printf("bind ok\n"); */
     }
 
     while (1) {

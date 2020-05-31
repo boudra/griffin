@@ -1,6 +1,8 @@
 #ifndef GN_CONN
 #define GN_CONN
 
+#include "gn_map.h"
+
 struct gn_endpoint_t;
 
 typedef struct gn_conn_t {

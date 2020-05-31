@@ -9,10 +9,11 @@ test:
 	mkdir -p build
 	cd build && cmake .. -DENABLE_TESTS=1
 	make -C build
-	for test in build/tests/*; do ./$$test; done
+	for test in bin/tests/*; do ./$$test; done
+	echo -e "\e[32mTESTS OK\e[0m"
 
-dev: test
-	fswatch src/* tests/* | xargs -n1 make test
+dev:
+	fswatch -m poll_monitor -o -0 src/* tests/* | xargs -0 -n1 -I{} make test | true
 
 clean:
 	rm -rf build/*

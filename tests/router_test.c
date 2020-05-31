@@ -1,4 +1,5 @@
 #include "griffin.h"
+#include "gn_router.h"
 
 #include <assert.h>
 
@@ -13,11 +14,13 @@ void root2(gn_conn_t* conn, gn_map_t* params) {
 }
 
 int main(int argc, char *argv[]) {
+    gn_endpoint_t endpoint = {0};
+    gn_router_t router = {0};
 
-    gn_endpoint_t endpoint = { .plugs = { &gn_router } };
+    gn_add_middleware(&endpoint, &gn_router, &router);
 
-    gn_match(&endpoint, "get", "/", root);
-    gn_match(&endpoint, "get", "/hello", root2);
+    gn_router_match(&router, GET, "/", root);
+    gn_router_match(&router, GET, "/hello", root2);
 
     gn_conn_t conn = gn_conn_create(&endpoint, "get", "/", NULL);
     gn_run(&conn);

@@ -30,19 +30,19 @@ static inline gn_conn_t gn_conn_create(struct gn_endpoint_t *endpoint,
 
 static inline gn_method_t gn_parse_method_str(const char *method) {
     gn_method_t m = GET;
-    if(strcmp(method, "get") != 0) {
+    if(strcmp(method, "get") == 0) {
         m = GET;
-    } else if(strcmp(method, "post") != 0) {
+    } else if(strcmp(method, "post") == 0) {
         m = POST;
-    } else if(strcmp(method, "put") != 0) {
+    } else if(strcmp(method, "put") == 0) {
         m = PUT;
-    } else if(strcmp(method, "patch") != 0) {
+    } else if(strcmp(method, "patch") == 0) {
         m = PATCH;
-    } else if(strcmp(method, "head") != 0) {
+    } else if(strcmp(method, "head") == 0) {
         m = HEAD;
-    } else if(strcmp(method, "options") != 0) {
+    } else if(strcmp(method, "options") == 0) {
         m = OPTIONS;
-    } else if(strcmp(method, "delete") != 0) {
+    } else if(strcmp(method, "delete") == 0) {
         m = DELETE;
     }
     return m;
@@ -55,12 +55,6 @@ void gn_put_header_i(gn_conn_t* conn, const char* key, const uint32_t i);
 void gn_put_header(gn_conn_t* conn, const char* key, const char *value);
 void gn_put_body(gn_conn_t* conn, const char* str);
 
-void gn_match(gn_endpoint_t* endpoint,
-                const char* method,
-                char* path,
-                gn_match_t* match);
-
-void gn_router(gn_conn_t* conn);
 void gn_request_id(gn_conn_t* conn);
 void gn_put_content_length(gn_conn_t* conn);
 void gn_log_request(gn_conn_t* conn);

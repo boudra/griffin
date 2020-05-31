@@ -73,8 +73,7 @@ static const char * gn_http_status_lines[] = {
 
 };
 
-
-void gn_server_start(gn_endpoint_t * endpoint);
+void gn_start_server(gn_endpoint_t * endpoint, const char* bind_address, unsigned short port);
 
 static inline char* gn_parse_header_head(char* buffer, char** method, char** path, char **query_string) {
     char *ptr = NULL;
