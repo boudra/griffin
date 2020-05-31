@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <wctype.h>
 #include <assert.h>
+#include <stdint.h>
 
 #define is_utf8(c) (((c) > 0x7f))
 

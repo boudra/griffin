@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <stdint.h>
 #include <assert.h>
 #include <arpa/inet.h>
 
@@ -25,7 +26,11 @@ void gn_server_start(gn_endpoint_t * endpoint) {
     address.sin_port = htons(endpoint->port);
 
     int optval = 1;
+
+    #ifdef SO_REUSE_PORT
     setsockopt(create_socket, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
+    #endif
+
     setsockopt(create_socket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
 
     if (bind(create_socket, (struct sockaddr *) &address, sizeof(address)) == 0) {
