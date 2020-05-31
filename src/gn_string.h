@@ -169,12 +169,19 @@ static inline char* gn_skip_until_eof(char *str) {
 
 static inline const size_t gn_str_split(const char *in, char delimiter, char **out) {
     size_t i = 0;
-    while(*(in)) {
+    while(*(in) != '\0') {
         char* end_part = gn_skip_until_char((char*)in, delimiter);
-        out[i] = gn_strndup(in, (end_part - in) + 1);
-        out[i][(end_part-in)] = '\0';
-        in = end_part;
-        ++i;
+
+        if(end_part > in) {
+            out[i] = gn_strndup(in, (end_part - in));
+            ++i;
+        }
+
+        if(*in == delimiter) {
+            in = end_part + 1;
+        } else {
+            in = end_part;
+        }
     }
     return i;
 }

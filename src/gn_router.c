@@ -23,8 +23,8 @@ void gn_router(gn_conn_t* conn, void* opts) {
         size_t req_segments_len = i;
         for(i = 0; i < handler->num_segments && i < req_segments_len; ++i) {
             gn_segment_match_rule_t *rule = &handler->segments[i];
-            if(rule == NULL) break;
-            else if(rule->type == 0 && strcmp(rule->value, conn->req_segments[i]) == 0) {
+
+            if(rule->type == 0 && strcmp(rule->value, conn->req_segments[i]) == 0) {
                 matches++;
             } else if(rule->type == 1) {
                 matches++;
@@ -32,6 +32,12 @@ void gn_router(gn_conn_t* conn, void* opts) {
         }
         if((matches > 0 && matches == handler->num_segments) ||
            (req_segments_len + handler->num_segments) == 0) {
+            for(i = 0; i < handler->num_segments && i < req_segments_len; ++i) {
+                gn_segment_match_rule_t *rule = &handler->segments[i];
+                if(rule->type == 1) {
+                    gn_map_put(&conn->req_params, rule->value, conn->req_segments[i]);
+                }
+            }
             handler->handler(conn, &conn->req_params);
             conn->res_match = handler->handler;
             break;
@@ -63,6 +69,7 @@ void gn_router_match(gn_router_t* router,
 
     while(*path != '\0' && segment < 8) {
         char* end_segment = gn_skip_until_char(path, '/');
+
         if(*path == ':') {
             last->segments[segment].type = 1;
             path++;
@@ -70,7 +77,11 @@ void gn_router_match(gn_router_t* router,
             last->segments[segment].type = 0;
         }
         last->segments[segment].value = gn_strndup(path, end_segment - path);
-        path = end_segment;
+        if(*end_segment == '\0') {
+            path = end_segment;
+        } else {
+            path = end_segment + 1;
+        }
         ++segment;
     }
 
