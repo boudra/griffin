@@ -8,6 +8,9 @@ void root(gn_conn_t* conn, gn_map_t* params) {
 }
 
 void say_hello(gn_conn_t* conn, gn_map_t* params) {
+    const char* name = gn_map_get(params, "name");
+    puts(name);
+
     gn_put_body(conn, "Hello world!");
     gn_put_status(conn, 200);
 }
@@ -19,7 +22,7 @@ int main(int argc, char *argv[]) {
     gn_add_middleware(&endpoint, &gn_router, &router);
 
     gn_router_match(&router, GET, "/", root);
-    gn_router_match(&router, GET, "/hello", say_hello);
+    gn_router_match(&router, GET, "/hello/:name", say_hello);
 
     gn_start_server(&endpoint, "0.0.0.0", 8080);
 

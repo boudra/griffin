@@ -2,6 +2,14 @@
 
 Tiny HTTP server library in C, inspired by the design of [Plug](https://github.com/elixir-plug/plug);
 
+I built this for fun and to learn the HTTP protocol and sockets in more depth, it has not ben tested in production.
+
+## Tasks
+
+- [x] Basic HTTP server
+- [x] Basic routing and path parameter parsing
+- [ ] HTTPS/TLS
+
 ## Example
 
 ```c

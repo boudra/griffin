@@ -8,7 +8,12 @@ void root(gn_conn_t* conn, gn_map_t* params) {
     gn_put_status(conn, 200);
 }
 
-void root2(gn_conn_t* conn, gn_map_t* params) {
+void say_hello(gn_conn_t* conn, gn_map_t* params) {
+    const char* name = gn_map_get(params, "name");
+    if(name != NULL) {
+        puts(name);
+    }
+
     gn_put_body(conn, "Hello world!");
     gn_put_status(conn, 200);
 }
@@ -20,7 +25,7 @@ int main(int argc, char *argv[]) {
     gn_add_middleware(&endpoint, &gn_router, &router);
 
     gn_router_match(&router, GET, "/", root);
-    gn_router_match(&router, GET, "/hello", root2);
+    /* gn_router_match(&router, GET, "/hello/name", say_hello); */
 
     gn_conn_t conn = gn_conn_create(&endpoint, "get", "/", NULL);
     gn_run(&conn);
@@ -29,12 +34,12 @@ int main(int argc, char *argv[]) {
     assert(conn.res_match == root);
     assert(strcmp(conn.res_body, "Hola mon!") == 0);
 
-    conn = gn_conn_create(&endpoint, "get", "/hello", NULL);
-    gn_run(&conn);
+    conn = gn_conn_create(&endpoint, "get", "/hello/moosh", NULL);
+    /* gn_run(&conn); */
 
     assert(conn.res_status == 200);
-    assert(conn.res_match == root2);
-    assert(strcmp(conn.res_body, "Hello world!") == 0);
+    assert(conn.res_match == say_hello);
+    assert(strcmp(conn.res_body, "Hello moosh!") == 0);
 
     conn = gn_conn_create(&endpoint, "get", "/test", NULL);
     gn_run(&conn);
