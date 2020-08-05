@@ -35,7 +35,7 @@ void gn_router(gn_conn_t* conn, void* opts) {
             for(i = 0; i < handler->num_segments && i < req_segments_len; ++i) {
                 gn_segment_match_rule_t *rule = &handler->segments[i];
                 if(rule->type == 1) {
-                    gn_map_put(&conn->req_params, rule->value, conn->req_segments[i]);
+                    gn_map_insert(&conn->req_params, rule->value, conn->req_segments[i]);
                 }
             }
             handler->handler(conn, &conn->req_params);
@@ -87,5 +87,3 @@ void gn_router_match(gn_router_t* router,
 
     last->num_segments = segment;
 }
-
-

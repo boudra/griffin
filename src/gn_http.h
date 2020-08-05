@@ -119,7 +119,7 @@ static inline char* gn_parse_header(char* buffer, gn_map_t* headers) {
     value = buffer;
     buffer = gn_skip_until_eof(buffer);
     *buffer = '\0';
-    gn_map_put(headers, key, value);
+    gn_map_insert(headers, key, value);
     return gn_skip_until_next_line(++buffer);
 }
 

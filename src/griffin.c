@@ -12,7 +12,7 @@ void gn_put_body(gn_conn_t* conn, const char* str) {
 }
 
 void gn_put_header(gn_conn_t* conn, const char* key, const char *value) {
-    gn_map_put(&conn->res_headers, key, gn_strdup(value));
+    gn_map_insert(&conn->res_headers, key, gn_strdup(value));
 }
 
 void gn_put_header_i(gn_conn_t* conn, const char* key, const uint32_t i) {
