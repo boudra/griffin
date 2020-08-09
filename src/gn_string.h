@@ -130,9 +130,9 @@ static inline char* gn_strndup(const char *s, size_t len) {
 
 static inline char* gn_strdup(const char *s) {
     const size_t len = strlen(s);
-    char *new = malloc(len);
+    char *new = malloc(len + 1);
     if (new == NULL) return NULL;
-    return memcpy(new, s, len);
+    return memcpy(new, s, len + 1);
 }
 
 static inline char* gn_skip_whitespace(char *str) {
