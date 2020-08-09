@@ -9,7 +9,7 @@ void root(gn_conn_t* conn, gn_map_t* params) {
 }
 
 void say_hello(gn_conn_t* conn, gn_map_t* params) {
-    const char* name = gn_map_get(params, "name");
+    const char* name = gn_map_find(params, "name");
 
     gn_put_body(conn, name);
     gn_put_status(conn, 200);

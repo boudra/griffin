@@ -16,26 +16,27 @@ int main(int argc, char *argv[]) {
     assert(map.size == 10);
     assert(map.count == 0);
 
-    gn_map_put(&map, "a", "one");
-    assert(strcmp("one", gn_map_get(&map, "a")) == 0);
+    gn_map_insert(&map, "a", "one");
+    assert(strcmp("one", gn_map_find(&map, "a")) == 0);
 
-    gn_map_put(&map, "a", "two");
-    assert(strcmp("two", gn_map_get(&map, "a")) == 0);
+    gn_map_insert(&map, "a", "two");
+    assert(strcmp("two", gn_map_find(&map, "a")) == 0);
+    assert(map.count == 1);
 
-    gn_map_put(&map, "b", "three");
+    gn_map_insert(&map, "b", "three");
 
     assert(map.count == 2);
 
-    gn_map_delete(&map, "b");
+    gn_map_erase(&map, "b");
 
     assert(map.count == 1);
 
-    gn_map_empty(&map);
+    gn_map_clear(&map);
 
     assert(map.count == 0);
     assert(map.size == 10);
 
-    gn_map_put(&map, "b", "three");
+    gn_map_insert(&map, "b", "three");
 
     gn_map_destroy(&map);
 
